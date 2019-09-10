@@ -7,17 +7,32 @@ import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.miraj.basicWebApp.model.Customer;
+import com.miraj.basicWebApp.repository.CustomerRepository;
 
 @Controller
 public class HomeController {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(HomeController.class);
 	
-	@RequestMapping(path = "home")
+	@Autowired
+	CustomerRepository cusRepo;
+	
+	
+	@RequestMapping(path = "/")
+	public String returnIndex() {
+		
+		return "index";
+		
+	}
+	
+	@RequestMapping(path = "/home")
 	public String returnHomePage(HttpServletRequest req , HttpServletResponse res) {
 		LOG.info("Home page loaded : " + req.getRemoteAddr());
 		
@@ -39,7 +54,7 @@ public class HomeController {
 		
 	}
 	
-	@RequestMapping(path = "about")
+	@RequestMapping(path = "/about")
 	public String returnAbout( @RequestParam("name") String pName, 
 								@RequestParam("country") String pCountry, 
 								HttpSession session) {
@@ -52,10 +67,9 @@ public class HomeController {
 		
 	}
 	
-	@RequestMapping(path = "contact")
+	@RequestMapping(path = "/contact")
 	public ModelAndView returnContact( @RequestParam("name") String pName, 
-								@RequestParam("country") String pCountry, 
-								HttpSession session) {
+								@RequestParam("country") String pCountry) {
 		LOG.info("Contact page loaded ");
 		
 		ModelAndView mv = new ModelAndView();
@@ -64,6 +78,35 @@ public class HomeController {
 		
 		//retruns contact.jsp page
 		mv.setViewName("contact");
+		return mv;
+		
+	}
+	
+	//we should send variable and values as parameters
+	@RequestMapping(path = "/customer")
+	public ModelAndView returnCustomer( Customer customer) {
+		LOG.info("Contact page loaded ");
+		
+		ModelAndView mv = new ModelAndView();
+		mv.addObject("cus", customer);
+		
+		//retruns contact.jsp page
+		mv.setViewName("customer");
+		return mv;
+		
+	}
+	
+	@RequestMapping(path = "/addCustomer")
+	public ModelAndView formRequest( Customer customer) {
+		LOG.info("addCustomer controller executed ");
+		
+		cusRepo.save(customer);
+		
+		ModelAndView mv = new ModelAndView();
+		mv.addObject("cus", customer);
+		
+		//retruns customer.jsp page
+		mv.setViewName("customer");
 		return mv;
 		
 	}
