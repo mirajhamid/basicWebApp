@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Random;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
 import com.miraj.basicWebApp.model.Customer;
 import com.miraj.basicWebApp.repository.CustomerRepository;
@@ -54,7 +52,6 @@ public class HomeController {
 		//Uses spring.mvc.view.suffix=.jsp property
 		//return "home";
 		//http://localhost:6900/home?name=miraj&country=SL
-		Cookie[] x = req.getCookies();
 		HttpSession session = req.getSession();
 		String name = req.getParameter("name");
 		String country = req.getParameter("country");
@@ -142,6 +139,7 @@ public class HomeController {
 	}
 	
 	//API's
+	//This will always communicate with json response
 	@RequestMapping(path = "/findAll")
 	@ResponseBody
 	public void findCustomer(HttpServletResponse response) throws IOException {
@@ -161,8 +159,13 @@ public class HomeController {
 	    }
 	}
 	
+	
+	//with quality negosiation
+	//use jakson dataformat with same jackson core version
+	//use Accept applicaion/json or application/xml
+	//if you dont use Accept header by default it will be JSON
 	@RequestMapping(path = "/findAll2")
-	public ResponseEntity<CustomerResponse> getAdmin() {
+	public ResponseEntity<CustomerResponse> findAll2() {
 		
 		Random random = new Random();
 		int x =  random.nextInt(10);
@@ -183,6 +186,14 @@ public class HomeController {
 			return new ResponseEntity<CustomerResponse>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		   
+	}
+
+	@RequestMapping(path = "/findAll3")
+	@ResponseBody
+	public Iterable<Customer> findAll3() {
+
+	    return cusRepo.findAll();
+
 	}
 
 }
