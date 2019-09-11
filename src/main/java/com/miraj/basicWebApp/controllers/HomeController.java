@@ -1,5 +1,10 @@
 package com.miraj.basicWebApp.controllers;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Random;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -8,13 +13,19 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
 import com.miraj.basicWebApp.model.Customer;
 import com.miraj.basicWebApp.repository.CustomerRepository;
+import com.miraj.basicWebApp.response.CustomerResponse;
 
 @Controller
 public class HomeController {
@@ -109,6 +120,69 @@ public class HomeController {
 		mv.setViewName("customer");
 		return mv;
 		
+	}
+	
+	//http://localhost:6900/findById?id=100
+	@RequestMapping(path = "/findById")
+	public ModelAndView findCustomer( Customer customer) {
+		LOG.info("find customer id: " + customer.getId());
+		
+		Customer cus = (Customer) cusRepo.findById(customer.getId());
+		List<Customer> cusList = cusRepo.findByIdGreaterThan(customer.getId());
+		
+		System.out.println( "CustList greater than : " +cusList);
+		
+		ModelAndView mv = new ModelAndView();
+		mv.addObject("cus", cus);
+		
+		//retruns customer.jsp page
+		mv.setViewName("customer");
+		return mv;
+		
+	}
+	
+	//API's
+	@RequestMapping(path = "/findAll")
+	@ResponseBody
+	public void findCustomer(HttpServletResponse response) throws IOException {
+
+		response.setContentType("application/json");
+	    response.setCharacterEncoding("utf-8");
+	    
+	    List<Customer> cusList = (List<Customer>)cusRepo.findAll();
+
+	    Gson gson = new Gson();
+	    String jsonData = gson.toJson(cusList);
+	    PrintWriter out = response.getWriter();
+	    try {
+	        out.println(jsonData);
+	    } finally {
+	        out.close();
+	    }
+	}
+	
+	@RequestMapping(path = "/findAll2")
+	public ResponseEntity<CustomerResponse> getAdmin() {
+		
+		Random random = new Random();
+		int x =  random.nextInt(10);
+	    
+		if( x > 5) {
+		   
+			List<Customer> cusList = (List<Customer>)cusRepo.findAll();
+		    
+		    CustomerResponse response = new CustomerResponse();
+		    response.setCusList(cusList);
+		    response.setMessage("Success");
+	    	return new ResponseEntity<CustomerResponse>(response, HttpStatus.OK);
+	   
+		}else {
+		   
+			CustomerResponse response = new CustomerResponse();
+			response.setMessage("error message");
+			return new ResponseEntity<CustomerResponse>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		   
 	}
 
 }
